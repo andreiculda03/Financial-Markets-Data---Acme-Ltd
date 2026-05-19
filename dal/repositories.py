@@ -129,7 +129,6 @@ class TimeSeriesRepository:
 
 class AnalyticsRepository:
     """Repository for accessing pre-computed Data Mining aggregations."""
-    
     def __init__(self):
         db = get_db()
         if db is None:

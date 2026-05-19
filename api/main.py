@@ -19,7 +19,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Acme Financial Data Warehouse API",
-    description="Master's Level Big Data Platform - Enterprise Architecture",
     lifespan=lifespan
 )
 
@@ -91,7 +90,7 @@ def get_time_series_data(
     endBusinessDate: str = Query(..., description="Newest date (YYYY-MM-DD)"),
     includeAttributes: bool = Query(False, description="Include list of attributes")
 ):
-    """[3] Returns the time series data for a specified asset and data source.
+    """Returns the time series data for a specified asset and data source.
     Strictly follows the response payload shape requested in the specification."""
     try:
         start_dt = datetime.strptime(startBusinessDate, "%Y-%m-%d").replace(tzinfo=timezone.utc)

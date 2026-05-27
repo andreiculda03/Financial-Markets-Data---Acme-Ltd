@@ -1,6 +1,6 @@
 # Acme Ltd. Financial Data Warehouse
 
-## Executive Summary
+## Project Summary
 This repository contains the end-to-end implementation of a bi-temporal, production-grade financial data warehouse. The system is engineered to ingest, normalize, and persist high-frequency market data across multiple asset classes (equities, indices, and cryptocurrencies). The architecture features a robust Data Access Layer (DAL) ensuring temporal correctness, distributed analytical pipelines powered by Apache Spark, a RESTful consumption API, and an advanced Model Context Protocol (MCP) server that enables local Large Language Models (LLMs) to perform grounded quantitative analysis directly against the warehouse infrastructure.
 
 ---
@@ -8,17 +8,17 @@ This repository contains the end-to-end implementation of a bi-temporal, product
 ## Architectural Overview
 The architecture enforces strict separation of concerns across five primary layers:
 
-1. **Ingestion Layer (`ingestion/`)**: Implements a Provider-Agnostic Factory Pattern for dynamic traffic routing (Alpha Vantage / Yahoo Finance). It ensures data pipeline idempotency through a rigorous "Filter & Insert" pattern, preventing data duplication during concurrent ETL operations on native time-series collections.
-2. **Persistence & Data Access Layer (`database/` & `dal/`)**: Utilizes MongoDB with Native Time-Series collections for optimized storage. Implements Slowly Changing Dimension (SCD) Type 2 semantics for the Asset catalog, ensuring non-destructive historical versioning.
-3. **Distributed Compute Layer (`spark_analytics/`)**: Executes cross-asset Machine Learning pipelines utilizing Gradient Boosted Trees (GBT) to engineer stationary returns, perform chronological validation, and persist forward-looking pricing predictions.
+1. **Ingestion Layer (`ingestion/`)**: Implements a Provider-Agnostic Factory Pattern for dynamic traffic routing (Alpha Vantage / Yahoo Finance). It ensures data pipeline idempotency through a rigorous "Filter and Insert" pattern, preventing data duplication during concurrent ETL operations on native time-series collections.
+2. **Persistence & Data Access Layer (`database/` & `dal/`)**: Utilizes MongoDB with Native Time-Series collections for optimized storage implementing a Slowly Changing Dimension (SCD) Type 2 semantic for the Asset catalog, thus ensuring non-destructive historical versioning.
+3. **Distributed Compute Layer (`spark_analytics/`)**: Executes cross-asset machine learning pipelines utilizing Gradient Boosted Trees to engineer stationary returns, perform chronological validation, and persist forward-looking pricing predictions.
 4. **API Consumption Layer (`api/`)**: A FastAPI-driven REST interface exposing strictly paginated and temporally accurate endpoints.
 5. **Agentic AI Integration (`mcp_server.py`)**: An MCP-compliant server exposing 11 grounded quantitative tools (e.g., Pearson correlation, RSI, prediction retrieval) to localized LLM agents.
 
 ---
 
-## Part 1: Environment Configuration & Prerequisites
+## Part 1: Environment Configuration and Prerequisites
 
-To evaluate this system, the host environment must be configured with Python 3.10+, Java (for Apache Spark JVM instantiation), and a local instance of MongoDB.
+To evaluate this pipeline, the host environment must be configured with Python 3.10+, Java (for Apache Spark JVM instantiation), and a local instance of MongoDB.
 
 ### 1.1. MongoDB Initialization
 Ensure a local MongoDB instance is running on the default port.
@@ -56,7 +56,7 @@ ALPHA_VANTAGE_API_KEY="your_api_key_here"
 
 ---
 
-## Part 2: System Evaluation & Automated Orchestration
+## Part 2: System Evaluation and Automated Orchestration
 
 To systematically evaluate the batch processes of this architecture, manual execution of individual modules is unnecessary. A master orchestration script (`run_pipeline.sh`) is provided to automate the build, test, and ingestion processes sequentially.
 
@@ -81,7 +81,7 @@ Run the orchestration script from the root directory:
 **Execution Sequence:**
 
 1. **Isolated Unit Testing (`pytest`):** Validates temporal logic (SCD Type 2) and data normalization transformations in a mocked environment.
-2. **Data Ingestion & Schema Initialization (`etl.py`):** Dynamically provisions MongoDB schemas, establishes native time-series structures, and executes the multi-provider ETL extraction and load processes.
+2. **Data Ingestion and Schema Initialization (`etl.py`):** Dynamically provisions MongoDB schemas, establishes native time-series structures, and executes the multi-provider ETL extraction and load processes.
 3. **Data Mining Aggregations (`aggregator.py`):** Executes native MongoDB aggregation pipelines to calculate monthly rollups.
 4. **Spark Distributed Aggregation (`spark_aggregation.py`):** Validates distributed compute capabilities by calculating parallelized frequency metrics via Apache Spark.
 5. **Spark Machine Learning (`spark_ml_regression.py`):** Instantiates the JVM, calculates stationary features across the 20-asset portfolio, trains the GBT regression model, and persists predictions to the database.
@@ -90,7 +90,7 @@ Run the orchestration script from the root directory:
 
 ## Part 3: Live Serving Layers (Consumption)
 
-Upon the successful conclusion of the orchestration script, the data warehouse is fully populated. The live serving layers must be instantiated in separate, active terminal sessions.
+Upon the successful execution of the orchestration script, the data warehouse is fully populated. The live serving layers must be instantiated in separate, active terminal sessions.
 
 ### 3.1. Instantiating the RESTful API
 

@@ -1,8 +1,5 @@
-"""
-ML Model Testing (Quantitative Finance Edition)
-Transforms non-stationary price data into stationary percentage returns,
-solving the Tree-based extrapolation problem. Evaluates multiple algorithms.
-"""
+"""ML Model Testing-Transforms non-stationary price data into stationary percentage returns,
+solving the Tree-based extrapolation problem. Evaluates multiple algorithms."""
 import sys
 import typing
 sys.modules['typing.io'] = typing
@@ -18,7 +15,7 @@ def run_model_test():
     print("Initializing Spark Session for Quantitative Model Evaluation...")
     
     spark = SparkSession.builder \
-        .appName("Data Warehouses - Quant ML Tournament") \
+        .appName("Data Warehouses - Machine Learning Model Testing") \
         .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.4.0") \
         .config("spark.driver.memory", "2g") \
         .config("spark.executor.memory", "2g") \
@@ -58,14 +55,12 @@ def run_model_test():
         .withColumn("ma_7d_close", avg("close").over(window_7d)) \
         .dropna()
 
-    # --- THE QUANTITATIVE UPGRADE ---
     # 1. Momentum feature
     engineered_df = engineered_df.withColumn("yesterday_trend", col("prev_close") - col("prev_open"))
     
     # 2. STATIONARITY: Calculate the percentage return from yesterday's close to today's open
     engineered_df = engineered_df.withColumn("target_return", (col("target_open") - col("prev_close")) / col("prev_close"))
 
-    # Assemble features
     assembler = VectorAssembler(
         inputCols=["prev_close", "prev_volume", "ma_7d_close", "yesterday_trend"],
         outputCol="features"
@@ -85,7 +80,6 @@ def run_model_test():
     print(f"Training on {train_data.count()} days, Testing on {test_data.count()} days.")
     print("-" * 50)
 
-    # 3. Define the Contenders (Notice labelCol is now 'target_return')
     models = {
         "Linear Regression": LinearRegression(featuresCol="features", labelCol="target_return", maxIter=10),
         "Random Forest": RandomForestRegressor(featuresCol="features", labelCol="target_return", numTrees=50, maxDepth=5, seed=42),
@@ -97,16 +91,12 @@ def run_model_test():
 
     leaderboard = []
 
-    # 4. Run the Tournament
     for model_name, algorithm in models.items():
         print(f"Training {model_name} on percentage returns...")
         start_time = time.time()
-        
-        # Train & Predict
         model = algorithm.fit(train_data)
         predictions = model.transform(test_data)
-        
-        # Evaluate
+
         rmse = evaluator_rmse.evaluate(predictions)
         r2 = evaluator_r2.evaluate(predictions)
         duration = time.time() - start_time
@@ -119,7 +109,6 @@ def run_model_test():
         })
         print(f"Completed {model_name} in {duration:.1f} seconds.")
 
-    # 5. Print Leaderboard
     print("\n" + "="*65)
     print(" MACHINE LEARNING MODEL EVALUATION RESULTS ")
     print("="*65)

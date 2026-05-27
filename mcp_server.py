@@ -10,8 +10,11 @@ mcp = FastMCP("Acme_Financial_Data_Warehouse")
 
 connect_to_mongo()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(BASE_DIR, "analytics", "Chat-Generated Outputs")
+
 @mcp.tool()
-def list_available_assets() -> List[Dict[str, Any]]:  # <-- FIX: Changed str to Any
+def list_available_assets() -> List[Dict[str, Any]]:
     """Returns a list of all active financial assets currently stored in the data warehouse. This is used to find the exact 'asset_id' before running other tools."""
     try:
         repo = AssetRepository()
@@ -60,8 +63,6 @@ def generate_comparative_chart(asset_id_1: str, asset_id_2: str, limit_days: int
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
-        import os
-        from dal.repositories import TimeSeriesRepository
         repo = TimeSeriesRepository()
         
         data1 = repo.findAll(asset_id_1, limit_days)
@@ -70,7 +71,6 @@ def generate_comparative_chart(asset_id_1: str, asset_id_2: str, limit_days: int
         if not data1 or not data2:
             return f"Error: Insufficient data to compare {asset_id_1} and {asset_id_2}."
             
-        # FIX: Force the datetime to a YYYY-MM-DD string
         df1 = pd.DataFrame([{"date": d["business_date"].strftime("%Y-%m-%d"), "price1": d["indicators"]["close"]} for d in data1])
         df2 = pd.DataFrame([{"date": d["business_date"].strftime("%Y-%m-%d"), "price2": d["indicators"]["close"]} for d in data2])
         
@@ -91,10 +91,12 @@ def generate_comparative_chart(asset_id_1: str, asset_id_2: str, limit_days: int
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        output_dir = "/Users/andrei/University/Data Warehouses/Financial Markets Data - Acme Ltd/analytics/Chat-Generated Outputs"
-        os.makedirs(output_dir, exist_ok=True)
+        
+        # --- PATH FIX ---
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"compare_{asset_id_1}_vs_{asset_id_2}.png"
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(OUTPUT_DIR, filename)
+        # ----------------
         
         plt.savefig(filepath)
         plt.close()
@@ -108,7 +110,6 @@ def generate_price_chart(asset_id: str, limit_months: int = 6) -> str:
     """[Visual Tool] Generates a professional line chart of the monthly average prices for an asset and saves it to the analytics output folder."""
     try:
         import matplotlib.pyplot as plt
-        import os
         repo = AnalyticsRepository()
         data = repo.get_monthly_rollups(asset_id, limit_months)
         
@@ -131,10 +132,12 @@ def generate_price_chart(asset_id: str, limit_months: int = 6) -> str:
         plt.ylabel("Price (USD)", fontsize=12)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        output_dir = "/Users/andrei/University/Data Warehouses/Financial Markets Data - Acme Ltd/analytics/Chat-Generated Outputs"
-        os.makedirs(output_dir, exist_ok=True)
+        
+        # --- PATH FIX ---
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"{asset_id}_performance_chart.png"
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(OUTPUT_DIR, filename)
+        # ----------------
         
         plt.savefig(filepath)
         plt.close()
@@ -149,7 +152,6 @@ def generate_volume_momentum_chart(asset_id: str, limit_days: int = 60) -> str:
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
-        import os
         repo = TimeSeriesRepository()
         
         data = repo.findAll(asset_id, limit_days)
@@ -177,10 +179,12 @@ def generate_volume_momentum_chart(asset_id: str, limit_days: int = 60) -> str:
 
         plt.title(f"Price vs Volume Momentum - {asset_id.upper()}")
         fig.tight_layout()
-        output_dir = "/Users/andrei/University/Data Warehouses/Financial Markets Data - Acme Ltd/analytics/Chat-Generated Outputs"
-        os.makedirs(output_dir, exist_ok=True)
+        
+        # --- PATH FIX ---
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"volume_{asset_id}.png"
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(OUTPUT_DIR, filename)
+        # ----------------
         
         plt.savefig(filepath)
         plt.close()
@@ -208,7 +212,6 @@ def get_database_coverage_report() -> dict:
             newest = item["newest_record"]
             count = item["total_records"]
             
-            # Calculate the mathematical years of coverage
             days_diff = (newest - oldest).days
             years = round(days_diff / 365.25, 2)
             
@@ -236,7 +239,6 @@ def analyze_asset_correlation(asset_id_1: str, asset_id_2: str, limit_days: int 
         
         if not data1 or not data2: return {"error": "Insufficient data."}
             
-        # FIX: Force the datetime to a YYYY-MM-DD string to ignore hours/minutes
         df1 = pd.DataFrame([{"date": d["business_date"].strftime("%Y-%m-%d"), "price1": d["indicators"]["close"]} for d in data1])
         df2 = pd.DataFrame([{"date": d["business_date"].strftime("%Y-%m-%d"), "price2": d["indicators"]["close"]} for d in data2])
         
@@ -256,7 +258,7 @@ def analyze_asset_correlation(asset_id_1: str, asset_id_2: str, limit_days: int 
         return {
             "asset_1": asset_id_1,
             "asset_2": asset_id_2,
-            "overlapping_trading_days": len(df), # Added this so the AI knows how many days aligned!
+            "overlapping_trading_days": len(df),
             "correlation_coefficient": round(correlation, 4),
             "interpretation": interpretation
         }
@@ -268,7 +270,6 @@ def analyze_rsi(asset_id: str, periods: int = 14) -> dict:
     """[Quantitative Tool] Calculates the 14-day Relative Strength Index (RSI).This is used to determine if an asset is technically Overbought (>70) or Oversold (<30)."""
     try:
         import pandas as pd
-        import numpy as np
         from dal.repositories import TimeSeriesRepository
         repo = TimeSeriesRepository()
         data = repo.findAll(asset_id, limit=periods * 3) 
@@ -304,7 +305,6 @@ def generate_return_distribution_chart(asset_id: str, limit_days: int = 365) -> 
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
-        import os
         from dal.repositories import TimeSeriesRepository
         repo = TimeSeriesRepository()
         
@@ -312,13 +312,12 @@ def generate_return_distribution_chart(asset_id: str, limit_days: int = 365) -> 
         if not data: return f"Error: No data for {asset_id}."
         
         df = pd.DataFrame([{"close": d["indicators"]["close"]} for d in data]).iloc[::-1]
-        df['daily_return'] = df['close'].pct_change() * 100 # In percentage
+        df['daily_return'] = df['close'].pct_change() * 100
         df = df.dropna()
 
         plt.figure(figsize=(10, 5))
         plt.hist(df['daily_return'], bins=50, color='#3498db', edgecolor='black', alpha=0.7)
         
-        # Add a vertical line at 0%
         plt.axvline(0, color='red', linestyle='dashed', linewidth=2)
         
         plt.title(f"Daily Return Distribution (Risk Profile) - {asset_id.upper()}", fontsize=14)
@@ -327,10 +326,11 @@ def generate_return_distribution_chart(asset_id: str, limit_days: int = 365) -> 
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.tight_layout()
         
-        output_dir = "/Users/andrei/University/Data Warehouses/Financial Markets Data - Acme Ltd/analytics/Chat-Generated Outputs"
-        os.makedirs(output_dir, exist_ok=True)
+        # --- PATH FIX ---
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"distribution_{asset_id}.png"
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(OUTPUT_DIR, filename)
+        # ----------------
         
         plt.savefig(filepath)
         plt.close()
@@ -347,17 +347,14 @@ def get_ml_predictions(asset_id: str, limit: int = 5) -> dict:
         db = get_db()
         collection = db["spark_regression_results"]
         
-        # Fetch the most recent predictions, specifically filtering by asset_id
         cursor = collection.find({"asset_id": asset_id}).sort("bdate", -1).limit(limit)
         
         import datetime
         
-        # DYNAMIC: Automatically fetches your system's current live date
         today_date = datetime.date.today() 
         
         formatted_results = []
         for doc in cursor:
-            # Safely parse the database target date
             bdate_raw = doc["bdate"]
             if hasattr(bdate_raw, 'date'):
                 target_date = bdate_raw.date()
@@ -366,7 +363,6 @@ def get_ml_predictions(asset_id: str, limit: int = 5) -> dict:
             else:
                 target_date = datetime.datetime.strptime(str(bdate_raw)[:10], "%Y-%m-%d").date()
             
-            # COMPLETELY DYNAMIC TIMELINE CHECK
             if target_date == today_date:
                 timeline_label = "Today's Open (Current Context)"
             elif target_date == today_date + datetime.timedelta(days=1):
@@ -395,5 +391,5 @@ def get_ml_predictions(asset_id: str, limit: int = 5) -> dict:
         return {"error": f"Failed to retrieve predictions: {str(e)}"}
 
 if __name__ == "__main__":
-    print("🚀 Starting Acme Data Warehouse MCP Server...")
+    print("Starting Acme Data Warehouse MCP Server...")
     mcp.run(transport='stdio')

@@ -7,7 +7,6 @@ from database.db import connect_to_mongo, close_mongo_connection
 from models.schemas import AssetBase, TemporalAssetRecord
 from dal.repositories import AssetRepository, TimeSeriesRepository, DataSourceRepository
 
-
 class AssetCreate(AssetBase):
     asset_id: str
 
@@ -65,12 +64,17 @@ def delete_asset(asset_id: str):
     repo.delete(asset_id)
     return None
 
-
 @app.get("/data-sources", response_model=List[str])
-def get_data_sources() -> List[str]:
+def get_data_sources(
+    # --- PAGINATION FIX ---
+    offset: int = Query(0, description="Starting position in the collection"),
+    limit: int = Query(20, description="Maximum number of returned data sources")
+    # ----------------------
+) -> List[str]:
     """[2] Returns the list of data sources' ids."""
     repo = DataSourceRepository()
-    return repo.findAll()
+    sources = repo.findAll()
+    return sources[offset : offset + limit]
 
 @app.get("/data-sources/{dataSourceId}", response_model=Dict[str, str])
 def get_data_source_details(dataSourceId: str) -> Dict[str, str]:
@@ -80,7 +84,6 @@ def get_data_source_details(dataSourceId: str) -> Dict[str, str]:
     if not source:
         raise HTTPException(status_code=404, detail="Data source not found")
     return source
-
 
 @app.get("/data")
 def get_time_series_data(
@@ -108,8 +111,7 @@ def get_time_series_data(
                 "businessDate": r["business_date"].strftime("%Y-%m-%d"),
                 "values": [r.get("indicators", {})] 
             })
-
-        response = {
+        response: Dict[str, Any] = {
             "data": {
                 "assetId": assetId,
                 "datasourceId": dataSourceId,
@@ -118,18 +120,12 @@ def get_time_series_data(
         }
         
         if includeAttributes:
-            
-            response: Dict[str, Any] = {
-                "data": {
-                    "assetId": assetId,
-                    "datasourceId": dataSourceId,
-                    "records": formatted_records
-                }
-            }
-            
-            if includeAttributes:
-                response["attributes"] = ["open", "close", "volume"] 
+            if records and "indicators" in records[0]:
+                response["attributes"] = list(records[0]["indicators"].keys())
+            else:
+                response["attributes"] = ["open", "high", "low", "close", "volume"] 
                 
-            return response
+        return response
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

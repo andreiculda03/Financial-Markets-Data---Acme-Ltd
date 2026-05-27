@@ -30,7 +30,7 @@ def connect_to_mongo():
                 db_instance.db.create_collection(
                     "time_series",
                     timeseries={
-                        "timeField": "timestamp",
+                        "timeField": "business_date",
                         "metaField": "meta",
                         "granularity": "minutes" 
                     }
@@ -38,9 +38,8 @@ def connect_to_mongo():
                 
                 print("Building compound indexes for analytics layer...")
                 db_instance.db["time_series"].create_index(
-                    [("meta.asset_id", 1), ("timestamp", -1)]
+                    [("meta.asset_id", 1), ("business_date", -1)]
                 )
-                
                 # Index for Asset Collection (SCD Type 2)
                 db_instance.db["assets"].create_index([("asset_id", 1)])
             

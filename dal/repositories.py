@@ -60,6 +60,7 @@ class AssetRepository:
             latest["is_deleted"] = True
             self.collection.insert_one(latest)
 
+
 class DataSourceRepository:
     """Repository for querying metadata about available data providers."""
     
@@ -67,7 +68,7 @@ class DataSourceRepository:
         db = get_db()
         if db is None:
             raise RuntimeError("Database connection is not initialized.")
-        self.collection = db["assets"] # We derive sources from active asset attributes
+        self.collection = db["assets"] 
 
     def findAll(self) -> List[str]:
         """Returns a distinct list of all data sources currently in use."""
@@ -80,6 +81,7 @@ class DataSourceRepository:
             return {"dataSourceId": source_id, "description": f"Data integration for {source_id.capitalize()}"}
         return None
 
+
 class TimeSeriesRepository:
     """Repository for managing time series data points using MongoDB Native TS."""
     
@@ -90,10 +92,23 @@ class TimeSeriesRepository:
         self.collection = db["time_series"]
 
     def save_batch(self, records: List[dict]) -> int:
-        """Idempotent batch insert for Time Series data."""
+        """Idempotent batch insert for MongoDB Native Time Series (Append-Only safe)."""
         if not records:
             return 0
-        result = self.collection.insert_many(records)
+            
+        asset_id = records[0]["meta"]["asset_id"]
+        
+        # 1. Fetch all existing dates for this asset from the database
+        existing_cursor = self.collection.find({"meta.asset_id": asset_id}, {"business_date": 1})
+        existing_dates = set(doc["business_date"] for doc in existing_cursor)
+        
+        # 2. Filter the incoming records, keeping only the ones that don't exist yet
+        new_records = [r for r in records if r["business_date"] not in existing_dates]
+        
+        # 3. Safely insert only the new records using the optimized insert_many
+        if not new_records:
+            return 0 
+        result = self.collection.insert_many(new_records)
         return len(result.inserted_ids)
 
     def find_by_date_range(self, asset_id: str, data_source_id: str, start_date: datetime, end_date: datetime) -> List[dict]:
@@ -105,12 +120,14 @@ class TimeSeriesRepository:
         }
         cursor = self.collection.find(query).sort("business_date", -1)
         return list(cursor)
+
     def findAll(self, asset_id: str, limit: int = 100) -> List[dict]:
         """Fetches points ordered by business_date descending (latest first) for MCP/AI consumption."""
         cursor = self.collection.find(
             {"meta.asset_id": asset_id}
         ).sort("business_date", -1).limit(limit)
         return list(cursor)
+
     def get_coverage_summary(self) -> list:
         """Aggregates the min/max dates and total record count for each asset."""
         pipeline = [
@@ -122,10 +139,11 @@ class TimeSeriesRepository:
                     "total_records": {"$sum": 1}
                 }
             },
-            {"$sort": {"_id": 1}} # Sort alphabetically
+            {"$sort": {"_id": 1}} 
         ]
         cursor = self.collection.aggregate(pipeline)
         return list(cursor)
+
 
 class AnalyticsRepository:
     """Repository for accessing pre-computed Data Mining aggregations."""

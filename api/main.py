@@ -66,10 +66,8 @@ def delete_asset(asset_id: str):
 
 @app.get("/data-sources", response_model=List[str])
 def get_data_sources(
-    # --- PAGINATION FIX ---
     offset: int = Query(0, description="Starting position in the collection"),
     limit: int = Query(20, description="Maximum number of returned data sources")
-    # ----------------------
 ) -> List[str]:
     """[2] Returns the list of data sources' ids."""
     repo = DataSourceRepository()

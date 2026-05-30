@@ -25,7 +25,6 @@ class YFinanceExtractor(MarketDataExtractor):
 class AlphaVantageExtractor(MarketDataExtractor):
     """Concrete implementation for Alpha Vantage API using secure keys."""
     def fetch_data(self, symbol: str) -> Optional[pd.DataFrame]:
-        # Strip crypto/index markers just for this basic Alpha Vantage implementation
         clean_symbol = symbol.split('-')[0].replace('^', '')
         
         api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
@@ -118,7 +117,7 @@ class FinancialETLPipeline:
                 
                 meta_data = TimeSeriesMeta(
                     asset_id=canonical_asset_id, 
-                    data_source_id=self.provider #Dynamically tags 'alphavantage' or 'yfinance'
+                    data_source_id=self.provider
                 )
                 
                 record = TimeSeriesDataPoint(
@@ -217,8 +216,6 @@ if __name__ == "__main__":
     av_pipeline = FinancialETLPipeline(provider="alphavantage")
     yf_pipeline = FinancialETLPipeline(provider="yfinance")
     
-    # --- TEMPORARY RATE-LIMIT FIX ---
-    # We leave this list empty so the router dynamically pushes all 20 assets to the unlimited Yahoo Finance API for this bulk load.
     av_assets = [] 
     
     portfolio = [

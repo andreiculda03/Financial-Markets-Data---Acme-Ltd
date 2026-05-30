@@ -1,8 +1,5 @@
-"""
-Use Case A: Simple Aggregation using Apache Spark
-Reads time-series records, groups by year, computes summary values, 
-and persists results back to MongoDB using idempotent overwrites.
-"""
+"""Aggregation using Apache Spark which reads time-series records, groups by year, computes summary values, 
+and persists results back to MongoDB using idempotent overwrites."""
 import sys
 import typing
 sys.modules['typing.io'] = typing
@@ -11,7 +8,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import year, col, count
 
 def run_aggregation():
-    print("Booting up Spark JVM (This may take a minute)...")
+    print("Booting up Spark JVM...")
     
     spark = SparkSession.builder \
         .appName("Data Warehouses - Compute Total") \

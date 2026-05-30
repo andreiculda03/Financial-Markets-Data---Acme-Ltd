@@ -180,11 +180,9 @@ def generate_volume_momentum_chart(asset_id: str, limit_days: int = 60) -> str:
         plt.title(f"Price vs Volume Momentum - {asset_id.upper()}")
         fig.tight_layout()
         
-        # --- PATH FIX ---
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"volume_{asset_id}.png"
         filepath = os.path.join(OUTPUT_DIR, filename)
-        # ----------------
         
         plt.savefig(filepath)
         plt.close()
@@ -326,11 +324,9 @@ def generate_return_distribution_chart(asset_id: str, limit_days: int = 365) -> 
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.tight_layout()
         
-        # --- PATH FIX ---
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         filename = f"distribution_{asset_id}.png"
         filepath = os.path.join(OUTPUT_DIR, filename)
-        # ----------------
         
         plt.savefig(filepath)
         plt.close()

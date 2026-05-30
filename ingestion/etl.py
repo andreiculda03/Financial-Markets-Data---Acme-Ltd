@@ -1,7 +1,7 @@
 import os
 import uuid
 import pandas as pd
-import requests # <-- Added for Alpha Vantage API
+import requests
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from models.schemas import TimeSeriesDataPoint, TimeSeriesMeta, get_utc_now

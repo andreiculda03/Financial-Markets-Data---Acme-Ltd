@@ -55,10 +55,10 @@ def run_model_test():
         .withColumn("ma_7d_close", avg("close").over(window_7d)) \
         .dropna()
 
-    # 1. Momentum feature
+    #Momentum feature
     engineered_df = engineered_df.withColumn("yesterday_trend", col("prev_close") - col("prev_open"))
     
-    # 2. STATIONARITY: Calculate the percentage return from yesterday's close to today's open
+    #STATIONARITY: For the calculation of the percentage return from yesterday's close to today's open
     engineered_df = engineered_df.withColumn("target_return", (col("target_open") - col("prev_close")) / col("prev_close"))
 
     assembler = VectorAssembler(
@@ -67,7 +67,7 @@ def run_model_test():
     )
     model_df = assembler.transform(engineered_df)
 
-    # 2. Strict Chronological Split
+    # Chronological splitting
     split_window = Window.orderBy("bdate")
     model_df = model_df.withColumn("row_num", row_number().over(split_window))
     
@@ -114,8 +114,6 @@ def run_model_test():
     print("="*65)
     print(" Note: RMSE represents prediction error as decimal percentage (e.g., 0.02 = 2.0%)")
     print("-" * 65)
-    
-    # Sort by RMSE (lowest error is best)
     leaderboard.sort(key=lambda x: x["RMSE"], reverse=False)
     
     print(f"{'Rank':<5} | {'Model Name':<25} | {'R² Score':<10} | {'RMSE (Error)'}")

@@ -87,7 +87,7 @@ class TestAssetRepository:
 class TestTimeSeriesRepository:
     
     def test_idempotent_save_batch(self, mock_db):
-        """Test the Filter & Insert functionality for Native Time Series data."""
+        """Test the Filter and Insert functionality for the Native Time Series data implementation."""
         repo = TimeSeriesRepository()
         
         d1 = datetime.now()
@@ -107,7 +107,7 @@ class TestTimeSeriesRepository:
         mock_db.insert_many.assert_called_once()
 
     def test_empty_save_batch(self, mock_db):
-        """Ensure passing an empty list doesn't crash the database."""
+        """Ensures that passing an empty list doesn't crash the database."""
         repo = TimeSeriesRepository()
         count = repo.save_batch([])
         

@@ -63,7 +63,6 @@ class AssetRepository:
 
 class DataSourceRepository:
     """Repository for querying metadata about available data providers."""
-    
     def __init__(self):
         db = get_db()
         if db is None:
@@ -84,7 +83,6 @@ class DataSourceRepository:
 
 class TimeSeriesRepository:
     """Repository for managing time series data points using MongoDB Native TS."""
-    
     def __init__(self):
         db = get_db()
         if db is None:
@@ -98,14 +96,14 @@ class TimeSeriesRepository:
             
         asset_id = records[0]["meta"]["asset_id"]
         
-        # 1. Fetch all existing dates for this asset from the database
+        #Fetching all existing dates for this asset from the database
         existing_cursor = self.collection.find({"meta.asset_id": asset_id}, {"business_date": 1})
         existing_dates = set(doc["business_date"] for doc in existing_cursor)
         
-        # 2. Filter the incoming records, keeping only the ones that don't exist yet
+        #Filters the incoming records, keeping only the ones that don't exist yet
         new_records = [r for r in records if r["business_date"] not in existing_dates]
         
-        # 3. Safely insert only the new records using the optimized insert_many
+        #Safely insertion of just the new records using insert_many
         if not new_records:
             return 0 
         result = self.collection.insert_many(new_records)

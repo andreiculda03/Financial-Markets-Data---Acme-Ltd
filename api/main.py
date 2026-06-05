@@ -35,7 +35,7 @@ def get_all_assets(
     offset: int = Query(0, description="Starting position in the collection"),
     limit: int = Query(20, description="Maximum number of returned asset ids")
 ) -> List[str]:
-    """[1.1] Returns a paginated JSON array of IDs of all available assets."""
+    """Returns a paginated JSON array of IDs of all available assets."""
     repo = AssetRepository()
     try:
         assets = repo.findAll(offset=offset, limit=limit)
@@ -45,7 +45,7 @@ def get_all_assets(
 
 @app.get("/assets/{asset_id}", response_model=TemporalAssetRecord)
 def get_asset_details(asset_id: str) -> TemporalAssetRecord:
-    """[1.2] Return the detailed JSON representation for the asset."""
+    """Returns the detailed JSON representation for the asset."""
     repo = AssetRepository()
     asset = repo.findLatest(asset_id)
     
@@ -69,7 +69,7 @@ def get_data_sources(
     offset: int = Query(0, description="Starting position in the collection"),
     limit: int = Query(20, description="Maximum number of returned data sources")
 ) -> List[str]:
-    """[2] Returns the list of data sources' ids."""
+    """Returns the list of data sources' ids."""
     repo = DataSourceRepository()
     sources = repo.findAll()
     return sources[offset : offset + limit]
@@ -91,8 +91,7 @@ def get_time_series_data(
     endBusinessDate: str = Query(..., description="Newest date (YYYY-MM-DD)"),
     includeAttributes: bool = Query(False, description="Include list of attributes")
 ):
-    """Returns the time series data for a specified asset and data source.
-    Strictly follows the response payload shape requested in the specification."""
+    """Returns the time series data for a specified asset and data source."""
     try:
         start_dt = datetime.strptime(startBusinessDate, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         end_dt = datetime.strptime(endBusinessDate, "%Y-%m-%d").replace(tzinfo=timezone.utc)

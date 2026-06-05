@@ -71,7 +71,7 @@ def run_production_ml():
     print(f"Training Global Model on {train_data.count()} historical observations across all assets...")
     print("Training Gradient Boosted Trees regression model on stationary returns...")
 
-    # 3. Train the Global Champion Model (Gradient Boosted Trees)
+    # 3. Training phase
     print("Training Gradient Boosted Trees on Stationary Returns...")
     gbt = GBTRegressor(featuresCol="features", labelCol="target_return", maxIter=20, maxDepth=5, seed=42)
     gbt_model = gbt.fit(train_data)
@@ -101,7 +101,7 @@ def run_production_ml():
         col("target_prediction_date").alias("bdate"), # Kept alias as bdate for database consistency
         col("target_open"), 
         col("predicted_price_usd"),
-        col("prediction") # Ensure the raw percentage prediction is included for the MCP server
+        col("prediction") # Ensures that the raw percentage prediction is included for the MCP server
     )
     
     print("Sample predictions (shifted to represent the forward-looking target date):")

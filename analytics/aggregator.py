@@ -30,7 +30,7 @@ def run_monthly_rollups():
                 },
                 "data_points_counted": {"$sum": 1},
                 
-                # We use $ifNull to handle heterogeneous fields (price_usd vs close vs yield_percent)
+                #$ifNull to handle heterogeneous fields (price_usd vs close vs yield_percent)
                 "max_value": {
                     "$max": {
                         "$ifNull": ["$indicators.close", {"$ifNull": ["$indicators.price_usd", "$indicators.yield_percent"]}]
@@ -88,7 +88,6 @@ if __name__ == "__main__":
     
     db = get_db()
     if db is not None:
-        # Ensure the aggregates collection has the unique index required by $merge
         db["aggregates"].create_index(
             [("asset_id", 1), ("period", 1), ("interval_type", 1)], 
             unique=True

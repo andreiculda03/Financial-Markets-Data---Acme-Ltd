@@ -2,8 +2,6 @@ import pytest
 import pandas as pd
 from datetime import datetime
 from unittest.mock import patch, MagicMock
-
-# Import the ETL pipeline
 from ingestion.etl import FinancialETLPipeline
 
 @pytest.fixture
@@ -29,7 +27,6 @@ class TestFinancialETL:
         records = pipeline.transform_market_data(sample_yfinance_data, "AAPL", "job_123")
         
         assert len(records) == 3
-        # AAPL should become aapl_stock_01
         assert records[0]["meta"]["asset_id"] == "aapl_stock_01"
         assert records[0]["meta"]["data_source_id"] == "yfinance"
 

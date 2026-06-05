@@ -1,18 +1,18 @@
 # Acme Ltd. Financial Data Warehouse
 
 ## Project Summary
-This repository contains the end-to-end implementation of a bi-temporal, production-grade financial data warehouse. The system is engineered to ingest, normalize, and persist high-frequency market data across multiple asset classes (equities, indices, and cryptocurrencies). The architecture features a robust Data Access Layer (DAL) ensuring temporal correctness, distributed analytical pipelines powered by Apache Spark, a RESTful consumption API, and an advanced Model Context Protocol (MCP) server that enables local Large Language Models (LLMs) to perform grounded quantitative analysis directly against the warehouse infrastructure.
+This repository contains the end-to-end implementation of a bi-temporal financial data warehouse. The project has been engineered to ingest, normalize, and store financial market data across multiple asset classes such as equities, indices, and cryptocurrencies. The architecture features a robust Data Access Layer (DAL) ensuring temporal correctness, distributed analytical pipelines powered by Apache Spark, a RESTful consumption API, and a Model Context Protocol (MCP) server that enables local Large Language Models to perform various quantitative analyzes directly against the warehouse infrastructure.
 
 ---
 
 ## Architectural Overview
 The architecture enforces strict separation of concerns across five primary layers:
 
-1. **Ingestion Layer (`ingestion/`)**: Implements a Provider-Agnostic Factory Pattern for dynamic traffic routing (Alpha Vantage / Yahoo Finance). It ensures data pipeline idempotency through a rigorous "Filter and Insert" pattern, preventing data duplication during concurrent ETL operations on native time-series collections.
-2. **Persistence & Data Access Layer (`database/` & `dal/`)**: Utilizes MongoDB with Native Time-Series collections for optimized storage implementing a Slowly Changing Dimension (SCD) Type 2 semantic for the Asset catalog, thus ensuring non-destructive historical versioning.
-3. **Distributed Compute Layer (`spark_analytics/`)**: Executes cross-asset machine learning pipelines utilizing Gradient Boosted Trees to engineer stationary returns, perform chronological validation, and persist forward-looking pricing predictions.
+1. **Ingestion Layer (`ingestion/`)**: Implements a Provider-Agnostic Factory Pattern for dynamic traffic routing (Alpha Vantage / Yahoo Finance). It ensures data pipeline idempotency through a "Filter and Insert" pattern that prevents data duplication during concurrent ETL operations on native time-series collections.
+2. **Persistence and Data Access Layer (`database/` and `dal/`)**: Utilizes MongoDB with Native Time-Series collections for an optimized storage through the implementation of a a Slowly Changing Dimension (SCD) Type 2 semantic for the Asset catalog, thus ensuring non-destructive historical versioning.
+3. **Distributed Compute Layer (`spark_analytics/`)**: Executes cross-asset machine learning pipelines utilizing a Gradient Boosted Trees machine learning model for stationary returns, chronological validation and forward-looking pricing predictions.
 4. **API Consumption Layer (`api/`)**: A FastAPI-driven REST interface exposing strictly paginated and temporally accurate endpoints.
-5. **Agentic AI Integration (`mcp_server.py`)**: An MCP-compliant server exposing 11 grounded quantitative tools (e.g., Pearson correlation, RSI, prediction retrieval) to localized LLM agents.
+5. **Agentic AI Integration (`mcp_server.py`)**: An MCP-compliant server exposing 11 quantitative tools such as Pearson correlation, RSI, prediction retrieval and so on for the local LLM agents.
 
 ---
 
@@ -69,7 +69,7 @@ chmod +x run_pipeline.sh
 
 ```
 
-### 2.2. Executing the Master Pipeline
+### 2.2. Executing the Pipeline
 
 Run the orchestration script from the root directory:
 
@@ -81,16 +81,16 @@ Run the orchestration script from the root directory:
 **Execution Sequence:**
 
 1. **Isolated Unit Testing (`pytest`):** Validates temporal logic (SCD Type 2) and data normalization transformations in a mocked environment.
-2. **Data Ingestion and Schema Initialization (`etl.py`):** Dynamically provisions MongoDB schemas, establishes native time-series structures, and executes the multi-provider ETL extraction and load processes.
+2. **Data Ingestion and Schema Initialization (`etl.py`):** Dynamically provisions MongoDB schemas, establishes native time-series structures and executes the multi-provider ETL extraction and load processes.
 3. **Data Mining Aggregations (`aggregator.py`):** Executes native MongoDB aggregation pipelines to calculate monthly rollups.
 4. **Spark Distributed Aggregation (`spark_aggregation.py`):** Validates distributed compute capabilities by calculating parallelized frequency metrics via Apache Spark.
-5. **Spark Machine Learning (`spark_ml_regression.py`):** Instantiates the JVM, calculates stationary features across the 20-asset portfolio, trains the GBT regression model, and persists predictions to the database.
+5. **Spark Machine Learning (`spark_ml_regression.py`):** Instantiates the JVM, calculates stationary features across the 20-asset portfolio, trains the GBT regression model, and stores its predictions to the database.
 
 ---
 
 ## Part 3: Live Serving Layers (Consumption)
 
-Upon the successful execution of the orchestration script, the data warehouse is fully populated. The live serving layers must be instantiated in separate, active terminal sessions.
+Upon the successful execution of the orchestration script, the data warehouse should be fully populated. The live serving layers must be instantiated in separate, active terminal sessions.
 
 ### 3.1. Instantiating the RESTful API
 
@@ -101,11 +101,11 @@ uvicorn api.main:app --reload
 
 ```
 
-* **Documentation:** Once initialized, navigate to `http://127.0.0.1:8000/docs` to access the interactive Swagger UI and explore the paginated endpoints.
+* **Documentation:** Once initialized, navigate to `http://127.0.0.1:8000/docs` to access the API Interface and explore the paginated endpoints.
 
 ### 3.2. Instantiating the Model Context Protocol (MCP) Server
 
-To evaluate the Agentic AI integration, the MCP server must be registered with a compatible LLM client (e.g., Claude Desktop, LM Studio).
+To evaluate the Agentic AI integration, the MCP server must be registered with a compatible LLM client such as Claude Desktop, LM Studio or any other program of your choice.
 
 1. Ensure the absolute path to `mcp_server.py` is accurately configured in your client's configuration JSON.
 2. The server utilizes `stdio` transport. It will initialize silently and await JSON-RPC packets from the host LLM.
